@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VK Access Token — Kate Mobile</title>
+  <link rel="shortcut icon" href="https://vk.com/images/icons/favicons/fav_logo_2x.ico">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-2: #273449;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-h: #2563eb;
+      --ok: #22c55e;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -10%, #1b2a4a 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .card {
+      width: 100%;
+      max-width: 460px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.45);
+    }
+    .key { font-size: 34px; text-align: center; }
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      margin: 10px 0 4px;
+      letter-spacing: .2px;
+    }
+    .sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 18px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .06s ease, background .15s ease;
+      text-decoration: none;
+      color: #fff;
+      background: var(--accent);
+    }
+    .btn:hover { background: var(--accent-h); }
+    .btn:active { transform: translateY(1px); }
+    .btn svg { width: 20px; height: 20px; }
+    .steps {
+      margin: 24px 0 4px;
+      padding: 18px;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+    .steps h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    .steps ol { list-style: none; counter-reset: s; }
+    .steps li {
+      counter-increment: s;
+      position: relative;
+      padding: 6px 0 6px 34px;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .steps li::before {
+      content: counter(s);
+      position: absolute; left: 0; top: 6px;
+      width: 22px; height: 22px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .extract { margin-top: 22px; }
+    .extract label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .extract input {
+      width: 100%;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      padding: 13px 14px;
+      font-size: 13px;
+      font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+      outline: none;
+    }
+    .extract input:focus { border-color: var(--accent); }
+    .result {
+      display: none;
+      margin-top: 14px;
+      background: #0b1220;
+      border: 1px solid var(--ok);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .result.show { display: block; }
+    .result .lbl {
+      font-size: 12px;
+      color: var(--ok);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 8px;
+    }
+    .token-row { display: flex; gap: 8px; align-items: stretch; }
+    .token-box {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+      font-size: 12px;
+      word-break: break-all;
+      resize: none;
+      outline: none;
+      min-height: 60px;
+    }
+    .copy {
+      flex: 0 0 auto;
+      align-self: flex-start;
+      background: var(--ok);
+      color: #06210f;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .copy:active { transform: translateY(1px); }
+    .meta { margin-top: 10px; font-size: 12px; color: var(--muted); }
+    .warn {
+      margin-top: 22px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+    .warn b { color: #fbbf24; }
+    a.inline { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="key">🔑</div>
+    <h1>VK Access Token</h1>
+    <div class="sub">Получение токена через Kate Mobile</div>
+
+    <a class="btn" id="kateBtn" href="#" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      Kate Mobile
+    </a>
+
+    <div class="steps">
+      <h2>Как получить</h2>
+      <ol>
+        <li>Нажми кнопку <b>Kate Mobile</b></li>
+        <li>В окне ВКонтакте нажми «Разрешить»</li>
+        <li>Откроется страница <b>blank.html</b> — скопируй её адрес целиком</li>
+        <li>Вставь адрес в поле ниже — токен извлечётся сам</li>
+      </ol>
+    </div>
+
+    <div class="extract">
+      <label for="urlInput">Вставь URL после авторизации (oauth.vk.com/blank.html#...)</label>
+      <input id="urlInput" type="text" placeholder="https://oauth.vk.com/blank.html#access_token=..." autocomplete="off" spellcheck="false">
+      <div class="result" id="result">
+        <div class="lbl">✅ Токен извлечён</div>
+        <div class="token-row">
+          <textarea class="token-box" id="tokenBox" readonly></textarea>
+          <button class="copy" id="copyBtn">Копировать</button>
+        </div>
+        <div class="meta" id="meta"></div>
+      </div>
+    </div>
+
+    <div class="warn">
+      <b>⚠️ Неофициальный способ.</b> Токен Kate Mobile живёт ~24 часа и не обновляется — по истечении получи заново здесь же.
+      Храни токен как пароль: не публикуй и не показывай в скриншотах.
+    </div>
+  </div>
+
+  <script>
+    'use strict';
+
+    // Kate Mobile (официальный app_id) + полный набор прав (scope=1073737727, как в vkhost по умолчанию).
+    // redirect_uri = blank.html — единственный разрешённый для этого приложения.
+    var KATE_APP_ID = 2685278;
+    var SCOPE = 1073737727;
+    var AUTH_URL = 'https://oauth.vk.com/authorize'
+      + '?client_id=' + KATE_APP_ID
+      + '&scope=' + SCOPE
+      + '&redirect_uri=https://oauth.vk.com/blank.html'
+      + '&display=page'
+      + '&response_type=token'
+      + '&revoke=1';
+
+    document.getElementById('kateBtn').setAttribute('href', AUTH_URL);
+
+    // Извлечение токена из вставленного URL (или из текущего адреса, если вдруг открыли с #).
+    function extractToken(str) {
+      if (!str) return null;
+      var m = str.match(/access_token=([^&\s]+)/);
+      if (!m) return null;
+      var token = m[1];
+      var exp = str.match(/expires_in=([0-9]+)/);
+      var uid = str.match(/user_id=([0-9]+)/);
+      return { token: token, expires_in: exp ? exp[1] : null, user_id: uid ? uid[1] : null };
+    }
+
+    var urlInput = document.getElementById('urlInput');
+    var result = document.getElementById('result');
+    var tokenBox = document.getElementById('tokenBox');
+    var meta = document.getElementById('meta');
+    var copyBtn = document.getElementById('copyBtn');
+
+    function render(data) {
+      if (!data) { result.classList.remove('show'); return; }
+      tokenBox.value = data.token;
+      var parts = [];
+      if (data.expires_in) {
+        var hrs = Math.round(parseInt(data.expires_in, 10) / 3600);
+        parts.push('срок: ' + (data.expires_in === '0' ? 'постоянный' : '~' + hrs + ' ч'));
+      }
+      if (data.user_id) parts.push('user_id: ' + data.user_id);
+      meta.textContent = parts.join('  ·  ');
+      result.classList.add('show');
+    }
+
+    urlInput.addEventListener('input', function () {
+      render(extractToken(urlInput.value.trim()));
+    });
+
+    copyBtn.addEventListener('click', function () {
+      tokenBox.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(tokenBox.value).then(function () {
+          copyBtn.textContent = 'Скопировано';
+          setTimeout(function () { copyBtn.textContent = 'Копировать'; }, 1500);
+        });
+      } else if (ok) {
+        copyBtn.textContent = 'Скопировано';
+        setTimeout(function () { copyBtn.textContent = 'Копировать'; }, 1500);
+      }
+    });
+
+    // Если страница вдруг открыта с токеном в hash — подхватим автоматически.
+    if (location.hash && location.hash.indexOf('access_token=') !== -1) {
+      urlInput.value = location.href;
+      render(extractToken(location.href));
+    }
+  </script>
+</body>
+</html>
