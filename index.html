@@ -143,6 +143,18 @@
       letter-spacing: .6px;
       margin-bottom: 8px;
     }
+    .lifetime {
+      display: none;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .lifetime.show { display: block; }
+    .lifetime.perm { background: rgba(34,197,94,.15); color: #4ade80; border: 1px solid #22c55e; }
+    .lifetime.temp { background: rgba(251,191,36,.12); color: #fbbf24; border: 1px solid #f59e0b; }
     .token-row { display: flex; gap: 8px; align-items: stretch; }
     .token-box {
       flex: 1;
@@ -207,6 +219,7 @@
       <input id="urlInput" type="text" placeholder="https://oauth.vk.com/blank.html#access_token=..." autocomplete="off" spellcheck="false">
       <div class="result" id="result">
         <div class="lbl">✅ Токен извлечён</div>
+        <div class="lifetime" id="lifetime"></div>
         <div class="token-row">
           <textarea class="token-box" id="tokenBox" readonly></textarea>
           <button class="copy" id="copyBtn">Копировать</button>
@@ -253,16 +266,27 @@
     var result = document.getElementById('result');
     var tokenBox = document.getElementById('tokenBox');
     var meta = document.getElementById('meta');
+    var lifetime = document.getElementById('lifetime');
     var copyBtn = document.getElementById('copyBtn');
 
     function render(data) {
       if (!data) { result.classList.remove('show'); return; }
       tokenBox.value = data.token;
-      var parts = [];
-      if (data.expires_in) {
+
+      // Баннер срока жизни — главное при проверке offline:
+      // expires_in=0 → токен БЕССРОЧНЫЙ (offline сработал); иначе временный (~часы).
+      lifetime.className = 'lifetime';
+      if (data.expires_in === '0') {
+        lifetime.classList.add('show', 'perm');
+        lifetime.textContent = '🟢 БЕССРОЧНЫЙ ТОКЕН (offline сработал — обновлять не нужно)';
+      } else if (data.expires_in) {
         var hrs = Math.round(parseInt(data.expires_in, 10) / 3600);
-        parts.push('срок: ' + (data.expires_in === '0' ? 'постоянный' : '~' + hrs + ' ч'));
+        lifetime.classList.add('show', 'temp');
+        lifetime.textContent = '🟡 Временный токен: ~' + hrs + ' ч (offline НЕ сработал)';
       }
+
+      var parts = [];
+      if (data.expires_in) parts.push('expires_in: ' + data.expires_in);
       if (data.user_id) parts.push('user_id: ' + data.user_id);
       meta.textContent = parts.join('  ·  ');
       result.classList.add('show');
